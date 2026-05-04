@@ -5,6 +5,7 @@ type Residue struct {
 	Name    string
 	Index   int
 	ChainID string
+	ICode   string
 	Atoms   []Atom
 	PLDDT   float64
 }
@@ -23,6 +24,7 @@ func (r Residue) AtomByName(name string) *Atom {
 type Structure struct {
 	ID       string
 	Residues []Residue
+	Models   [][]Residue
 	Source   string
 }
 

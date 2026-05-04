@@ -11,12 +11,13 @@ import (
 // ParsePDB parses ATOM records from a PDB stream.
 func ParsePDB(id string, r io.Reader) (Structure, error) {
 	scanner := bufio.NewScanner(r)
-	result := Structure{ID: id}
+	result := Structure{ID: id, Models: [][]Residue{}}
 	lineNumber := 0
 	currentKey := residueKey{}
 	current := Residue{}
 	haveCurrent := false
 	bFactorSum := 0.0
+	inModel := false
 
 	flush := func() {
 		if !haveCurrent {
@@ -31,6 +32,22 @@ func ParsePDB(id string, r io.Reader) (Structure, error) {
 	for scanner.Scan() {
 		lineNumber++
 		line := scanner.Text()
+
+		if strings.HasPrefix(line, "MODEL ") {
+			flush()
+			haveCurrent = false
+			inModel = true
+			result.Residues = nil
+			continue
+		}
+		if strings.HasPrefix(line, "ENDMDL") {
+			flush()
+			haveCurrent = false
+			inModel = false
+			result.Models = append(result.Models, result.Residues)
+			result.Residues = nil
+			continue
+		}
 		if !strings.HasPrefix(line, "ATOM  ") {
 			continue
 		}
@@ -40,11 +57,21 @@ func ParsePDB(id string, r io.Reader) (Structure, error) {
 			return Structure{}, fmt.Errorf("line %d: %w", lineNumber, err)
 		}
 
-		key := residueKey{name: atom.ResidueName, index: atom.ResidueIndex, chainID: atom.ChainID}
+		key := residueKey{
+			name:    atom.ResidueName,
+			index:   atom.ResidueIndex,
+			chainID: atom.ChainID,
+			iCode:   atom.ICode,
+		}
 		if !haveCurrent || key != currentKey {
 			flush()
 			currentKey = key
-			current = Residue{Name: atom.ResidueName, Index: atom.ResidueIndex, ChainID: atom.ChainID}
+			current = Residue{
+				Name:    atom.ResidueName,
+				Index:   atom.ResidueIndex,
+				ChainID: atom.ChainID,
+				ICode:   atom.ICode,
+			}
 			bFactorSum = 0
 			haveCurrent = true
 		}
@@ -56,6 +83,10 @@ func ParsePDB(id string, r io.Reader) (Structure, error) {
 	}
 	flush()
 
+	if inModel {
+		result.Models = append(result.Models, result.Residues)
+	}
+
 	return result, nil
 }
 
@@ -63,6 +94,7 @@ type residueKey struct {
 	name    string
 	index   int
 	chainID string
+	iCode   string
 }
 
 func parseAtomLine(line string) (Atom, error) {
@@ -91,12 +123,35 @@ func parseAtomLine(line string) (Atom, error) {
 		return Atom{}, err
 	}
 
-	bFactor := 0.0
+	bfactor := 0.0
 	if len(line) >= 66 {
-		bFactor, err = parseFloatField(line, 60, 66, "B-factor")
+		bfactor, err = parseFloatField(line, 60, 66, "B-factor")
 		if err != nil {
 			return Atom{}, err
 		}
+	}
+
+	occupancy := 1.0
+	if len(line) >= 60 {
+		occ, err := parseFloatField(line, 54, 60, "occupancy")
+		if err == nil {
+			occupancy = occ
+		}
+	}
+
+	altLoc := ""
+	if len(line) >= 17 {
+		altLoc = strings.TrimSpace(line[16:17])
+	}
+
+	iCode := ""
+	if len(line) >= 27 {
+		iCode = strings.TrimSpace(line[26:27])
+	}
+
+	elem := ""
+	if len(line) >= 78 {
+		elem = strings.TrimSpace(slice(line, 76, 78))
 	}
 
 	return Atom{
@@ -108,8 +163,11 @@ func parseAtomLine(line string) (Atom, error) {
 		X:            x,
 		Y:            y,
 		Z:            z,
-		BFactor:      bFactor,
-		Element:      strings.TrimSpace(slice(line, 76, 78)),
+		BFactor:      bfactor,
+		Occupancy:    occupancy,
+		AltLoc:       altLoc,
+		ICode:        iCode,
+		Element:      elem,
 	}, nil
 }
 

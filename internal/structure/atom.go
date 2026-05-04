@@ -7,7 +7,10 @@ type Atom struct {
 	Element      string
 	X, Y, Z      float64
 	BFactor      float64
+	Occupancy    float64
 	ResidueName  string
 	ResidueIndex int
 	ChainID      string
+	AltLoc       string
+	ICode        string
 }
