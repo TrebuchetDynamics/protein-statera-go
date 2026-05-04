@@ -1,0 +1,7 @@
+HEADER    SAMPLE ALPHAFOLD STRUCTURE
+ATOM      1  N   MET A   1      11.104  13.207  14.118  1.00 95.10           N
+ATOM      2  CA  MET A   1      12.300  13.900  14.500  1.00 94.20           C
+ATOM      3  C   MET A   1      13.100  12.800  15.200  1.00 94.80           C
+ATOM      4  N   GLY A   2      14.500  12.900  15.800  1.00 48.70           N
+ATOM      5  CA  GLY A   2      15.300  11.800  16.500  1.00 49.20           C
+END
