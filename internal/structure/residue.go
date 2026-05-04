@@ -9,6 +9,16 @@ type Residue struct {
 	PLDDT   float64
 }
 
+// AtomByName returns the first atom matching the given name, or nil.
+func (r Residue) AtomByName(name string) *Atom {
+	for i := range r.Atoms {
+		if r.Atoms[i].Name == name {
+			return &r.Atoms[i]
+		}
+	}
+	return nil
+}
+
 // Structure is the parsed protein model used by validation modules.
 type Structure struct {
 	ID       string
