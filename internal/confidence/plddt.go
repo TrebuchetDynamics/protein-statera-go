@@ -1,6 +1,7 @@
 package confidence
 
 const (
-	HighConfidencePLDDT = 90.0
-	LowConfidencePLDDT  = 50.0
+	VeryHighPLDDT  = 90.0
+	ConfidentPLDDT = 70.0
+	LowPLDDT       = 50.0
 )

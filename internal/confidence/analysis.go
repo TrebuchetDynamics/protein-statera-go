@@ -9,45 +9,56 @@ type Segment struct {
 	Count int
 }
 
-// Analysis summarizes AlphaFold pLDDT confidence bands.
+// Analysis summarizes AlphaFold pLDDT confidence using EMBL-EBI standard bands.
+//
+// Bands (matching AlphaFold DB colour scheme):
+//
+//	VeryHigh   >= 90   (dark blue)
+//	Confident  70-90  (light blue)
+//	Low        50-70  (yellow)
+//	VeryLow    < 50   (orange/red)
 type Analysis struct {
-	High        int
-	Medium      int
-	Low         int
-	LowSegments []Segment
+	VeryHigh         int
+	Confident        int
+	Low              int
+	VeryLow          int
+	VeryLowSegments  []Segment
 }
 
-// Analyze counts high, medium, and low pLDDT residues.
+// Analyze counts residues into EMBL-EBI pLDDT bands and tracks very-low segments.
 func Analyze(s structure.Structure) Analysis {
 	result := Analysis{}
-	activeLow := Segment{}
+	active := Segment{}
 
 	for _, residue := range s.Residues {
 		switch {
-		case residue.PLDDT >= HighConfidencePLDDT:
-			result.High++
-			activeLow = closeLowSegment(activeLow, &result)
-		case residue.PLDDT < LowConfidencePLDDT:
+		case residue.PLDDT >= VeryHighPLDDT:
+			result.VeryHigh++
+			active = closeSegment(active, &result)
+		case residue.PLDDT >= ConfidentPLDDT:
+			result.Confident++
+			active = closeSegment(active, &result)
+		case residue.PLDDT >= LowPLDDT:
 			result.Low++
-			if activeLow.Count == 0 {
-				activeLow = Segment{Start: residue.Index, End: residue.Index, Count: 1}
-			} else {
-				activeLow.End = residue.Index
-				activeLow.Count++
-			}
+			active = closeSegment(active, &result)
 		default:
-			result.Medium++
-			activeLow = closeLowSegment(activeLow, &result)
+			result.VeryLow++
+			if active.Count == 0 {
+				active = Segment{Start: residue.Index, End: residue.Index, Count: 1}
+			} else {
+				active.End = residue.Index
+				active.Count++
+			}
 		}
 	}
-	closeLowSegment(activeLow, &result)
+	closeSegment(active, &result)
 
 	return result
 }
 
-func closeLowSegment(segment Segment, result *Analysis) Segment {
+func closeSegment(segment Segment, result *Analysis) Segment {
 	if segment.Count > 0 {
-		result.LowSegments = append(result.LowSegments, segment)
+		result.VeryLowSegments = append(result.VeryLowSegments, segment)
 	}
 	return Segment{}
 }

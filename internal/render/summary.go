@@ -22,10 +22,11 @@ func StructureReportText(report evidence.Report) string {
 	fmt.Fprintf(&b, "residues=%.0f\n", report.Metrics["residues"])
 	fmt.Fprintf(&b, "atoms=%.0f\n", report.Metrics["atoms"])
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "confidence:")
-	fmt.Fprintf(&b, "  high (>90): %d\n", report.Confidence["high"])
-	fmt.Fprintf(&b, "  medium: %d\n", report.Confidence["medium"])
-	fmt.Fprintf(&b, "  low (<50): %d\n", report.Confidence["low"])
+	fmt.Fprintln(&b, "confidence (EMBL-EBI bands):")
+	fmt.Fprintf(&b, "  very_high (>90): %d\n", report.Confidence["very_high"])
+	fmt.Fprintf(&b, "  confident (70-90): %d\n", report.Confidence["confident"])
+	fmt.Fprintf(&b, "  low (50-70): %d\n", report.Confidence["low"])
+	fmt.Fprintf(&b, "  very_low (<50): %d\n", report.Confidence["very_low"])
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "geometry:")
 	fmt.Fprintf(&b, "  steric_clashes=%.0f\n", report.Metrics["steric_clashes"])
@@ -40,19 +41,20 @@ func StructureReportText(report evidence.Report) string {
 	return b.String()
 }
 
-// ConfidenceText renders pLDDT band counts and low-confidence segments.
+// ConfidenceText renders pLDDT band counts and very-low-confidence segments.
 func ConfidenceText(result confidence.Analysis) string {
 	var b strings.Builder
 	fmt.Fprintln(&b, "=== Confidence Analysis ===")
-	fmt.Fprintf(&b, "high (>90): %d\n", result.High)
-	fmt.Fprintf(&b, "medium: %d\n", result.Medium)
-	fmt.Fprintf(&b, "low (<50): %d\n", result.Low)
+	fmt.Fprintf(&b, "very_high (>90): %d\n", result.VeryHigh)
+	fmt.Fprintf(&b, "confident (70-90): %d\n", result.Confident)
+	fmt.Fprintf(&b, "low (50-70): %d\n", result.Low)
+	fmt.Fprintf(&b, "very_low (<50): %d\n", result.VeryLow)
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "low_confidence_segments:")
-	if len(result.LowSegments) == 0 {
+	fmt.Fprintln(&b, "very_low_confidence_segments:")
+	if len(result.VeryLowSegments) == 0 {
 		fmt.Fprintln(&b, "  none")
 	} else {
-		for _, segment := range result.LowSegments {
+		for _, segment := range result.VeryLowSegments {
 			fmt.Fprintf(&b, "  residues %d-%d count=%d\n", segment.Start, segment.End, segment.Count)
 		}
 	}

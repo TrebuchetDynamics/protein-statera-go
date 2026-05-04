@@ -21,33 +21,36 @@ func BuildStructureReport(s structure.Structure, confidenceAnalysis confidence.A
 	report := Report{
 		StructureID: s.ID,
 		Metrics: map[string]float64{
-			"residues":        float64(len(s.Residues)),
-			"atoms":           float64(s.AtomCount()),
-			"steric_clashes":  float64(clashes.Total),
-			"severe_clashes":  float64(clashes.Severe),
-			"low_confidence":  float64(confidenceAnalysis.Low),
-			"high_confidence": float64(confidenceAnalysis.High),
+			"residues":          float64(len(s.Residues)),
+			"atoms":             float64(s.AtomCount()),
+			"steric_clashes":    float64(clashes.Total),
+			"severe_clashes":    float64(clashes.Severe),
+			"very_low_conf":     float64(confidenceAnalysis.VeryLow),
+			"low_conf":          float64(confidenceAnalysis.Low),
+			"confident_conf":    float64(confidenceAnalysis.Confident),
+			"very_high_conf":    float64(confidenceAnalysis.VeryHigh),
 		},
 		Confidence: map[string]int{
-			"high":   confidenceAnalysis.High,
-			"medium": confidenceAnalysis.Medium,
-			"low":    confidenceAnalysis.Low,
+			"very_high": confidenceAnalysis.VeryHigh,
+			"confident": confidenceAnalysis.Confident,
+			"low":       confidenceAnalysis.Low,
+			"very_low":  confidenceAnalysis.VeryLow,
 		},
 		Evidence: EvidencePredictedStructure,
 		Source:   s.Source,
 	}
 
-	if confidenceAnalysis.High > confidenceAnalysis.Medium+confidenceAnalysis.Low {
+	if confidenceAnalysis.VeryHigh > confidenceAnalysis.Confident+confidenceAnalysis.Low+confidenceAnalysis.VeryLow {
 		report.Notes = append(report.Notes, "Stable high-confidence core detected")
 	}
-	if confidenceAnalysis.Low > 0 {
-		report.Notes = append(report.Notes, "Low-confidence residues detected; inspect contiguous flexible or disordered regions")
+	if confidenceAnalysis.VeryLow > 0 {
+		report.Notes = append(report.Notes, "Very-low-confidence residues detected; inspect contiguous flexible or disordered regions")
 	}
 	if clashes.Total > 0 {
 		report.Notes = append(report.Notes, "Steric clashes detected; review local geometry around reported atom pairs")
 	}
 	if len(report.Notes) == 0 {
-		report.Notes = append(report.Notes, "No low-confidence residues or steric clashes detected by MVP checks")
+		report.Notes = append(report.Notes, "No very-low-confidence residues or steric clashes detected by MVP checks")
 	}
 
 	return report

@@ -30,7 +30,7 @@ func TestBuildStructureReportAddsMetricsAndInterpretation(t *testing.T) {
 	if report.Evidence != EvidencePredictedStructure {
 		t.Fatalf("Evidence = %q, want predicted_structure", report.Evidence)
 	}
-	if !strings.Contains(strings.Join(report.Notes, " "), "Low-confidence residues detected") {
-		t.Fatalf("notes = %#v, want low-confidence interpretation", report.Notes)
+	if !strings.Contains(strings.Join(report.Notes, " "), "Very-low-confidence residues detected") {
+		t.Fatalf("notes = %#v, want very-low-confidence interpretation", report.Notes)
 	}
 }

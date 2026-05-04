@@ -21,14 +21,15 @@ func TestAnalyzeCountsPLDDTBandsAndSegments(t *testing.T) {
 
 	result := Analyze(s)
 
-	if result.High != 2 || result.Medium != 2 || result.Low != 2 {
-		t.Fatalf("bands = high:%d medium:%d low:%d, want 2/2/2", result.High, result.Medium, result.Low)
+	if result.VeryHigh != 2 || result.Confident != 1 || result.Low != 1 || result.VeryLow != 2 {
+		t.Fatalf("bands = VHigh:%d Conf:%d Low:%d VLow:%d, want 2/1/1/2",
+			result.VeryHigh, result.Confident, result.Low, result.VeryLow)
 	}
-	if len(result.LowSegments) != 1 {
-		t.Fatalf("low segment count = %d, want 1", len(result.LowSegments))
+	if len(result.VeryLowSegments) != 1 {
+		t.Fatalf("very-low segment count = %d, want 1", len(result.VeryLowSegments))
 	}
-	segment := result.LowSegments[0]
+	segment := result.VeryLowSegments[0]
 	if segment.Start != 4 || segment.End != 5 || segment.Count != 2 {
-		t.Fatalf("low segment = %+v, want 4-5 count 2", segment)
+		t.Fatalf("very-low segment = %+v, want 4-5 count 2", segment)
 	}
 }
