@@ -1,10 +1,6 @@
 package geometry
 
-import (
-	"math"
-
-	"github.com/TrebuchetDynamics/protein-statera-go/internal/structure"
-)
+import "github.com/TrebuchetDynamics/protein-statera-go/internal/structure"
 
 // ClashPair records two non-bonded atoms closer than the configured threshold.
 type ClashPair struct {
@@ -61,8 +57,12 @@ func approximateBonded(a, b struct {
 	residueIndex int
 	chainID      string
 }) bool {
-	if a.chainID == b.chainID && a.residueIndex == b.residueIndex {
-		return true
+	if a.chainID != b.chainID {
+		return false
 	}
-	return math.Abs(float64(a.atom.ID-b.atom.ID)) == 1
+	delta := a.atom.ID - b.atom.ID
+	if delta < 0 {
+		delta = -delta
+	}
+	return delta == 1
 }
