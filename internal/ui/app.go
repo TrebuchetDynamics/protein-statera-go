@@ -1,11 +1,7 @@
 package ui
 
-import (
-	"fmt"
-	"io"
-)
+import "io"
 
-// Run prints the decoupled MVP dashboard until a gogpu/ui frontend is added.
 func Run(w io.Writer) {
-	fmt.Fprint(w, DashboardText())
+	_, _ = w.Write([]byte("Protein Statera Go — run `go run ./cmd/protein-ui` for the gogpu/ui dashboard.\n"))
 }
